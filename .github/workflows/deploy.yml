@@ -21,14 +21,14 @@ jobs:
         with:
           token_format: 'access_token'
           workload_identity_provider: 'projects/579245582530/locations/global/workloadIdentityPools/k8s-pool/providers/k8s-provider'
-          service_account: 'cicd-terraform@$GCP_PROJECT_ID.iam.gserviceaccount.com'
+          service_account: 'cicd-terraform@cicd-terraform-422508.iam.gserviceaccount.com'
       - uses: 'google-github-actions/setup-gcloud@v1'
       - name: Docker auth
         run: gcloud auth configure-Docker
       - name: Build and push docker image
         run: |
-          docker build -it us.gcr.io/$GCP_PROJECT_ID/nodeappimage:$IMAGE_TAG
-          docker push us.gcr.io/$GCP_PROJECT_ID/nodeappimage:$IMAGE_TAG
+          docker build -it us.gcr.io/cicd-terraform-422508/nodeappimage:$IMAGE_TAG
+          docker push us.gcr.io/cicd-terraform-422508/nodeappimage:$IMAGE_TAG
         working-directory: ./nodeapp
       - uses: hashicorp/setup-terraform@v2
       - name: Terraform init
