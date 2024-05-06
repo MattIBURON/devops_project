@@ -1,4 +1,4 @@
-data "google_container_engine_version" "default" {
+data "google_container_engine_versions" "default" {
   location = "europe-west9"
 }  
 data "google_client_config" "current" {
