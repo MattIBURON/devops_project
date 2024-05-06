@@ -8,5 +8,5 @@ output "cluster_location" {
   value = google_container_cluster.default.location
 }
 output "load-balancer-ip" {
-  value = google_container_cluster.default.address
+  value = google_container_cluster.default.load_balancer_ip
 }
