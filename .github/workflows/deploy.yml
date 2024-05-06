@@ -24,7 +24,7 @@ jobs:
           service_account: 'cicd-terraform@cicd-terraform-422508.iam.gserviceaccount.com'
       - uses: 'google-github-actions/setup-gcloud@v1'
       - name: Docker auth
-        run: gcloud auth configure-Docker
+        run: gcloud auth configure-docker
       - name: Build and push docker image
         run: |
           docker build -it us.gcr.io/cicd-terraform-422508/nodeappimage:$IMAGE_TAG
