@@ -20,7 +20,7 @@ jobs:
         uses: 'google-github-actions/auth@v1'
         with:
           token_format: 'access_token'
-          workload_identity_provider: '/projects/579245582530/locations/global/workloadIdentityPools/k8s-pool/providers/k8s-provider'
+          workload_identity_provider: 'projects/579245582530/locations/global/workloadIdentityPools/k8s-pool/providers/k8s-provider'
           service_account: 'cicd-terraform@$GCP_PROJECT_ID.iam.gserviceaccount.com'
       - uses: 'google-github-actions/setup-gcloud@v1'
       - name: Docker auth
