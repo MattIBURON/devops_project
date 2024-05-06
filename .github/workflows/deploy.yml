@@ -1,20 +1,6 @@
 name: Deploy to Kubernetes
 on:
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'
-        required: true
-        default: 'debug'
-        type: choice
-        options:
-        - info
-        - warning
-        - debug
-      tags:
-        description: 'Test scenario tags'
-        required: false
-        type: boolean
+  workflow_dispatch
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   TF_STATE_BUCKET_NAME: ${{ secrets.GCP_TF_STATE_BUCKET }}
