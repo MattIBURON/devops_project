@@ -1,8 +1,5 @@
 name: Deploy to Kubernetes
-on:
-  push:
-    branches:
-      - "Complete-CI/CD-with-Terraform-GKE"
+on: workflow_dispatch
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   TF_STATE_BUCKET_NAME: ${{ secrets.GCP_TF_STATE_BUCKET }}
@@ -37,8 +34,9 @@ jobs:
         run: terraform init -backend-config="bucket=$TF_STATE_BUCKET_NAME" -backend-config="prefix=k8s"
         working-directory: ./terraform
       - name: Terraform plan
-        run: terraform plan -var="region=europe-west9" -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -var="container_image=us.gcr.io/${{ secrets.GCP_PROJECT_ID }}/nodeappimage:${{ github.sha }}" -out=tfplan
+        run: terraform plan -var="region=europe-west9" -var="project_id=$GCP_PROJECT_ID" -var="container_image=us.gcr.io/$GCP_PROJECT_ID/nodeappimage:$IMAGE_TAG" -out=PLAN
         working-directory: ./terraform
       - name: Terraform apply
         run: terraform apply PLAN
         working-directory: ./terraform
+      
