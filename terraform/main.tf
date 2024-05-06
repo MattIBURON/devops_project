@@ -13,7 +13,8 @@ resource "google_container_cluster" "default" {
     machine_type = "g1-small"
 	disk_size_gb = 32
   }
-  provisionner "local-exec" {
+
+  provisioner "local-exec" {
     when = destroy
     command = "sleep 90"
   }
