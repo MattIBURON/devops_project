@@ -38,11 +38,6 @@ jobs:
       - name: Terraform init
         run: terraform init -backend-config="bucket=$TF_STATE_BUCKET_NAME" -backend-config="prefix=k8s"
         working-directory: ./terraform
-      - name: Terraform destroy
-        run: |
-          export TF_LOG="DEBUG"
-          terraform destroy
-        working-directory: ./terraform
       - name: Terraform plan
         run: |
           export TF_LOG="DEBUG"
