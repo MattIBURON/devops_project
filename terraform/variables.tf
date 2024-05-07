@@ -29,3 +29,4 @@ variable "ip_range_pods_name" {
 variable "ip_range_services_name" {
   description = "The secondary ip range to use for services"
   default     = "ip-range-services"
+}
