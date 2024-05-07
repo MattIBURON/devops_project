@@ -9,18 +9,6 @@ provider "google" {
   region = var.region
 }
 
-resource "google_container_cluster" "default" {
-  name     = "example-cluster"
-  location = var.region
-  # Add your other cluster configurations here
-
-  node_pool {
-    name           = "default-pool"
-    initial_node_count = 1
-    # You can add more configurations for the node pool here if needed
-  }
-}
-
 provider "kubernetes" {
   host = google_container_cluster.default.endpoint
   token = data.google_client_config.current.access_token
