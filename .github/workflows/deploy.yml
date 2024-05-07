@@ -25,6 +25,10 @@ jobs:
       - uses: 'google-github-actions/setup-gcloud@v1'
       - name: Docker auth
         run: gcloud auth configure-docker
+      - name: Disable IPv6
+        run: |
+          sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+          sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
       - name: Build and push docker image
         run: |
           docker build -t us.gcr.io/cicd-terraform-422508/nodeappimage:$IMAGE_TAG .
@@ -35,8 +39,12 @@ jobs:
         run: terraform init -backend-config="bucket=$TF_STATE_BUCKET_NAME" -backend-config="prefix=k8s"
         working-directory: ./terraform
       - name: Terraform plan
-        run: terraform plan -var="region=europe-west9c" -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -var="container_image=us.gcr.io/${{ secrets.GCP_PROJECT_ID }}/nodeappimage:${{ github.sha }}" -out=tfplan
+        run: |
+          export TF_LOG="DEBUG"
+          terraform plan -var="region=europe-west9-c" -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -var="container_image=us.gcr.io/${{ secrets.GCP_PROJECT_ID }}/nodeappimage:${{ github.sha }}" -out=tfplan
         working-directory: ./terraform
       - name: Terraform apply
-        run: terraform apply tfplan
+        run: |
+          export TF_LOG="DEBUG"
+          terraform apply tfplan
         working-directory: ./terraform
