@@ -35,6 +35,11 @@ jobs:
           docker push us.gcr.io/cicd-terraform-422508/nodeappimage:$IMAGE_TAG
         working-directory: ./nodeapp
       - uses: hashicorp/setup-terraform@v2
+      - name: Terraform destroy
+        run: |
+          export TF_LOG="DEBUG"
+          terraform destroy
+        working-directory: ./terraform      
       - name: Terraform init
         run: terraform init -backend-config="bucket=$TF_STATE_BUCKET_NAME" -backend-config="prefix=k8s"
         working-directory: ./terraform
