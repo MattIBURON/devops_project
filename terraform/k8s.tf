@@ -40,14 +40,15 @@ resource "kubernetes_service" "appservice" {
   }
   spec {
     type = "LoadBalancer"
-	load_balancer_ip = google_compute_address.default.address
-	port {
-	  port = 80
-	  target_port = 80
-	}
-	selector = {
-	  "type" = "backend"
-	  "app" = "nodeapp"	
-	}
+    # Specify load balancer IP if required
+    # load_balancer_ip = google_compute_address.default.address
+    port {
+      port        = 80
+      target_port = 80
+    }
+    selector = {
+      "type" = "backend"
+      "app"  = "nodeapp"
+    }
   }
 }
