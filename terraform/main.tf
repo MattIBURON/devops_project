@@ -1,96 +1,93 @@
 terraform {
-  required_version = ">= 0.12"
-  backend "gcs" {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+      version = "4.47.0"
+    }
   }
 }
-   
+
 provider "google" {
   project = var.project_id
-  region = var.region
+  region  = var.region
 }
 
+provider "google-beta" {
+  project = var.project_id
+  region  = var.region
+}
+
+module "gke_auth" {
+  source = "terraform-google-modules/kubernetes-engine/google//modules/auth"
+  version = "24.1.0"
+  depends_on   = [module.gke]
+  project_id   = var.project_id
+  location     = module.gke.location
+  cluster_name = module.gke.name
+}
+
+resource "local_file" "kubeconfig" {
+  content  = module.gke_auth.kubeconfig_raw
+  filename = "kubeconfig-${var.env_name}"
+}
+
+module "gcp-network" {
+  source       = "terraform-google-modules/network/google"
+  version      = "6.0.0"
+  project_id   = var.project_id
+  network_name = "${var.network}-${var.env_name}"
+
+  subnets = [
+    {
+      subnet_name   = "${var.subnetwork}-${var.env_name}"
+      subnet_ip     = "10.10.0.0/16"
+      subnet_region = var.region
+    },
+  ]
+
+  secondary_ranges = {
+    "${var.subnetwork}-${var.env_name}" = [
+      {
+        range_name    = var.ip_range_pods_name
+        ip_cidr_range = "10.20.0.0/16"
+      },
+      {
+        range_name    = var.ip_range_services_name
+        ip_cidr_range = "10.30.0.0/16"
+      },
+    ]
+  }
+}
+
+data "google_client_config" "default" {}
+
 provider "kubernetes" {
-  host = google_container_cluster.default.endpoint
+  host                   = "https://${module.gke.endpoint}"
   token = data.google_client_config.current.access_token
   client_certificate = base64decode(google_container_cluster.default.master_auth[0].client_certificate)
   cluster_ca_certificate = base64decode(google_container_cluster.default.master_auth[0].cluster_ca_certificate)
 }
 
-data "google_container_engine_versions" "default" {
-  location = "europe-west9-c"
-}  
-data "google_client_config" "current" {
-
-}
-resource "google_container_cluster" "default" {
-  name = "my-first-cluster"
-  location = "europe-west9-c"
-  initial_node_count = 3
-  min_master_version = data.google_container_engine_versions.default.latest_master_version
-  node_config {
-    machine_type = "e2-small"
-	disk_size_gb = 32
-  }
-
-  provisioner "local-exec" {
-    when = destroy
-    command = "sleep 90"
-  }
-}
-resource "kubernetes_deployment" "name" {
-  metadata {
-    name = "nodedeployment"
-	labels = {
-	  "type" = "backend"
-	  "app" = "nodeapp"
-	}
-  }
-  spec {
-    replicas = 1
-	selector {
-	  match_labels = {
-	    "type" = "backend"
-	    "app" = "nodeapp"	  
-	  }
-	}
-	template {
-	  metadata {
-	    name = "nodeapppod"
-		labels = {
-	      "type" = "backend"
-	      "app" = "nodeapp"		
-		}
-	  }
-	  spec {
-	    container {
-		  name = "nodeappcontainer"
-		  image = var.container_image
-		  port {
-		    container_port = 80
-		  }
-		}
-	  }
-	}
-  }
-}
-resource "google_compute_address" "default" {
-  name = "ipforservice"
-  region = var.region
-}
-resource "kubernetes_service" "appservice" {
-  metadata {
-    name = "nodeapp-lb-service"
-  }
-  spec {
-    type = "LoadBalancer"
-	load_balancer_ip = google_compute_address.default.address
-	port {
-	  port = 80
-	  target_port = 80
-	}
-	selector = {
-	  "type" = "backend"
-	  "app" = "nodeapp"	
-	}
-  }
+module "gke" {
+  source                 = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
+  version                = "24.1.0"
+  project_id             = var.project_id
+  name                   = "${var.cluster_name}-${var.env_name}"
+  regional               = true
+  region                 = var.region
+  network                = module.gcp-network.network_name
+  subnetwork             = module.gcp-network.subnets_names[0]
+  ip_range_pods          = var.ip_range_pods_name
+  ip_range_services      = var.ip_range_services_name
+  
+  node_pools = [
+    {
+      name                      = "node-pool"
+      machine_type              = "e2-medium"
+      node_locations            = "europe-west9-a,europe-west9-b,europe-west9-c"
+      min_count                 = 1
+      max_count                 = 2
+      disk_size_gb              = 30
+    },
+  ]
 }
