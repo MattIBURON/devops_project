@@ -1,12 +1,12 @@
 data "google_container_engine_versions" "default" {
-  location = "europe-west9-c"
+  location = "europe-west9"
 }  
 data "google_client_config" "current" {
 
 }
 resource "google_container_cluster" "default" {
   name = "my-first-cluster"
-  location = "europe-west9-c"
+  location = "europe-west9"
   initial_node_count = 3
   min_master_version = data.google_container_engine_versions.default.latest_master_version
   node_config {

@@ -39,12 +39,8 @@ jobs:
         run: terraform init -backend-config="bucket=$TF_STATE_BUCKET_NAME" -backend-config="prefix=k8s"
         working-directory: ./terraform
       - name: Terraform plan
-        run: |
-          export TF_LOG="DEBUG"
-          terraform plan -var="region=europe-west9-c" -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -var="container_image=us.gcr.io/${{ secrets.GCP_PROJECT_ID }}/nodeappimage:${{ github.sha }}" -out=tfplan
+        run: terraform plan -var="region=europe-west9-c" -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -var="container_image=us.gcr.io/${{ secrets.GCP_PROJECT_ID }}/nodeappimage:${{ github.sha }}" -out=tfplan
         working-directory: ./terraform
       - name: Terraform apply
-        run: |
-          export TF_LOG="DEBUG"
-          terraform apply tfplan
+        run: terraform apply tfplan
         working-directory: ./terraform
